@@ -65,6 +65,7 @@ def initialize_parameters(layer_dims):
         parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l - 1])
         parameters['b' + str(l)] = np.zeros(shape = (l, 1))
         parameters['Z' + str(l)] = 0
+        parameters['A' + str(l)] = 0
     
     return parameters
 
@@ -80,13 +81,14 @@ def activation_forward(W, b, A_prev, activation):
 def forward_propagation(parameters, X, activation_funcs_map):
 
     L = len(parameters) // 3
-    
+    parameters["A" + 0] = X
     A_prev = X
     for l in range(1, L):
         W = parameters['W' + str(l)]
         b = parametersh["W" + str(l)]
         activation = activation_funcs_map[str(l)]
         A_curr = activation_forward(W, b, A_prev, activation)
+        parameters['A' + str(l)] = A_curr
         A_prev = A_curr
 
     return A_curr
@@ -96,20 +98,26 @@ def compute_cost(AL, Y):
     m = Y.shape[1]
     cost = - 1 / m * np.sum(np.multiply(Y, np.log(AL)) + np.multiply(1 - Y, np.log(1 - AL)))
 
-def single_layer_back_prop(A_prev, da_next, Z, activation):
+def single_layer_back_prop(A_prev, da, Z, activation):
     
     activation_gradient = activation_functions[activation][1]
     dadz = activation_gradient(Z)
     dz = np.multiply(dadz, dz)
     dw = np.dot(dz, A_prev.T)
     db = np.sum(dz, axis = 1)
-    return dw, db
+    return dz, dw, db
 
-def back_propagation(parameters, activation_funcs_map):
+def back_propagation(AL, parameters, activation_funcs_map):
 
     L = len(parameters) // 3
-    daL =
+    daL = np.divide(-Y, AL) + np.divide(1 - Y, 1 - AL)
+    da = daL
 
-
-    for l in reversed(range(L - 1)):
-        Z =
+    for l in range(L - 1, -1, 0):
+        Z = parameters["Z" + str(l)]
+        W = parameters["W" + str(l)]
+        b = parameters["b"] + str(l)]
+        A_prev = parameters["A" + str(l - 1)]
+        activation = activation_funcs_map[l]
+        dz, dw, db = single_layer_back_prop(A_prev, da, Z, activation)
+        da = np.dot(W.T, dz)
