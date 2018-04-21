@@ -1,18 +1,34 @@
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-from testCases_v4 import *
+from testCases_v2 import *
 from dnn_utils_v2 import sigmoid, sigmoid_backward, relu, relu_backward
 
-%matplotlib inline
+# %matplotlib inline
 plt.rcParams['figure.figsize'] = (5.0, 4.0) # set default size of plots
 plt.rcParams['image.interpolation'] = 'nearest'
 plt.rcParams['image.cmap'] = 'gray'
 
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 np.random.seed(1)
+
+def load_dataset():
+   train_dataset = h5py.File('datasets/train_catvnoncat.h5', "r")
+   train_set_x_orig = np.array(train_dataset["train_set_x"][:]) # your train set features
+   train_set_y_orig = np.array(train_dataset["train_set_y"][:]) # your train set labels
+   
+   test_dataset = h5py.File('datasets/test_catvnoncat.h5', "r")
+   test_set_x_orig = np.array(test_dataset["test_set_x"][:]) # your test set features
+   test_set_y_orig = np.array(test_dataset["test_set_y"][:]) # your test set labels
+   
+   classes = np.array(test_dataset["list_classes"][:]) # the list of classes
+   
+   train_set_y_orig = train_set_y_orig.reshape((1, train_set_y_orig.shape[0]))
+   test_set_y_orig = test_set_y_orig.reshape((1, test_set_y_orig.shape[0]))
+
+   return train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes
 
 
 # GRADED FUNCTION: initialize_parameters
@@ -164,7 +180,7 @@ def linear_activation_forward(A_prev, W, b, activation):
     assert (A.shape == (W.shape[0], A_prev.shape[1]))
     cache = (linear_cache, activation_cache)
     
-return A, cache
+    return A, cache
 
 #test
 #A_prev, W, b = linear_activation_forward_test_case()
@@ -213,7 +229,7 @@ def L_model_forward(X, parameters):
     
     assert(AL.shape == (1,X.shape[1]))
     
-return AL, caches
+    return AL, caches
 
 #test
 #X, parameters = L_model_forward_test_case_2hidden()
