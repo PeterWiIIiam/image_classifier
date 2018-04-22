@@ -1,6 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt
+
 import h5py
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 from testCases_v2 import *
 # import dataset
 def sigmoid(z):
@@ -38,8 +41,8 @@ def load_dataset():
     test_set_y_orig = test_set_y_orig.reshape((1, test_set_y_orig.shape[0]))
 
     # print(np.size(train_set_x_orig[1]))
-    # plt.imshow(train_set_x_orig[5])
-    # plt.show()
+    plt.imshow(train_set_x_orig[5])
+    plt.show()
     # ## START CODE HERE ## (PUT YOUR IMAGE NAME)
     # my_image = "my_image.jpg"   # change this to the name of your image file
     # ## END CODE HERE ##
@@ -139,7 +142,7 @@ def back_propagation(AL, Y, caches, activation_funcs_map, alpha):
     da = daL
     print(Y, ' Y')
 
-    for l in range(L, L - 1, -1):
+    for l in range(L, 0, -1):
         Z = caches["Z" + str(l)]
         W = caches["W" + str(l)]
         b = caches["b" + str(l)]
@@ -206,7 +209,7 @@ def image_preprocess():
     # my_predicted_image = predict(my_image)
     print(np.size(my_image_show))
     plt.imshow(my_image_show)
-    plt.show()
+    # plt.show()
     # print("y = " + str(np.squeeze(my_predicted_image)) + 
     #     ", your algorithm predicts a \"" + 
     #     classes[int(np.squeeze(my_predicted_image)),].decode("utf-8") +  
