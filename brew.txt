@@ -1,0 +1,6 @@
+tensor flow instructions:
+
+bash:
+source ~/Code/tensorflow/bin/activate
+
+https://developersoapbox.com/install-python-packages-without-root-using-virtualenv/
