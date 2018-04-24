@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import h5py
 
 
+
 def sigmoid(Z):
     """
     Implements the sigmoid activation in numpy
@@ -83,12 +84,200 @@ def sigmoid_backward(dA, cache):
     
     return dZ
 
-def load_external_data():
+def load_dog_data():
 
-    return train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes
+    import glob
+    import pickle
+    import scipy
+    from scipy import ndimage
+
+    # X = np.empty([1, 400 * 400 * 3])
+    # Y = np.empty([1, 1])
+    classes = 0
+    for filename in glob.glob('/Users/xhe/Desktop/image_classifier/dog_images/*'):
+
+        X = np.empty([1, 400 * 400 * 3])
+        Y = np.empty([1, 1])
+        
+        dog_name = filename[57:len(filename)]
+        num_px = 400
+        classes += 1
+        i = 0
+        for image_name in glob.glob('%s/*'%filename):
+            image_orig = np.array(ndimage.imread(image_name, flatten=False))
+            my_image = scipy.misc.imresize(image_orig, size=(num_px,num_px)).reshape((num_px*num_px*3,1))
+            my_image = my_image/255.
+            my_image = my_image.T
+            X = np.vstack((X, my_image))
+            Y = np.vstack((Y, dog_name))
+            i += 1
+            print(dog_name + " : ", i)
+
+        with open("dog_data/%s"%dog_name, 'w+') as f:
+            pickle.dump([X, Y], f) # X and Y are m by n
+
+    X = X.T
+    Y = Y.T
+
+    # with open("dogs_data", 'w+') as dogs_data:
+    #     pickle.dump([X, Y, classes], dogs_data)
+
+    print(X.shape, "shape of X")
+    print(Y.shape, "shape of Y")
+
+def load_dog_data_into_variables():
+
+    import glob
+    import pickle
+    import scipy
+    from scipy import ndimage
+
+    classes = []
+
+    set_choices = ['train', 'test']
+    set_weight = [0.7, 0.3]
+
+    Shetland_sheepdog = False
+
+    for filename in glob.glob('/Users/xhe/Desktop/image_classifier/dog_images/*'):
+        dog_name = filename[57:len(filename)]
+        if dog_name == "Shetland_sheepdog":
+            Shetland_sheepdog = True
+
+
+
+        if Shetland_sheepdog == True:
+            train_set_x = np.empty([1, 400 * 400 * 3])
+            train_set_y = np.empty([1, 1])
+            test_set_x = np.empty([1, 400 * 400 * 3])
+            test_set_y = np.empty([1, 1])
+
+
+            num_px = 400
+            classes.append(dog_name)
+            i = 0
+
+            for image_name in glob.glob('%s/*'%filename):
+                image_orig = np.array(ndimage.imread(image_name, flatten=False))
+                my_image = scipy.misc.imresize(image_orig, size=(num_px,num_px)).reshape((num_px*num_px*3,1))
+                my_image = my_image/255.
+                my_image = my_image.T
+
+                if np.random.choice(set_choices, p = set_weight) == 'train':
+                    print('train')
+                    train_set_x = np.vstack((train_set_x, my_image))
+                    train_set_y = np.vstack((test_set_y, [dog_name]))
+                else:
+                    print('test')
+                    test_set_x = np.vstack((test_set_x, my_image))
+                    test_set_y = np.vstack((test_set_y, [dog_name]))
+                
+                i += 1
+                print(dog_name + " : ", i)
+
+            with h5py.File("dog_data_h5/%s.hdf5"%dog_name, "a") as f:
+                f.create_dataset("train_set_x", data = train_set_x) # X and Y are m by n
+                f.create_dataset("train_set_y", data = train_set_y)
+                f.create_dataset("test_set_x", data = test_set_x)
+                f.create_dataset("test_set_y", data = test_set_y)
+
+
+def test_train_set():
+    import glob
+    classes = np.empty([1,1])
+    total_train_set_x = np.empty([1, 400 * 400 * 3])
+    total_train_set_y = np.empty([1, 120])
+    total_test_set_x = np.empty([1, 400 * 400 * 3])
+    total_test_set_y = np.empty([1, 120])
+
+    with h5py.File("dog_data_h5/train_and_test.hdf5", 'a') as f:
+        f.create_dataset("total_train_set_x", data = total_train_set_x) # X and Y are m by n
+        f.create_dataset("total_train_set_y",  data = total_train_set_y)
+        f.create_dataset("total_test_set_x",  data = total_test_set_x)
+        f.create_dataset("total_test_set_y",  data = total_test_set_y)
+
+    i = 0
+    j = 0
+    num_train = 0
+    for filename in glob.glob('/Users/xhe/Desktop/image_classifier/dog_data_h5/*'):
+
+        if filename != '/Users/xhe/Desktop/image_classifier/dog_data_h5/train_and_test.hdf5':
+
+            print(filename)
+            dog_name = filename[48:len(filename)]
+            classes = np.vstack((classes, dog_name))
+            with h5py.File("dog_data_h5/%s"%dog_name,'r') as f:
+
+                print(dog_name)
+                print(f.keys())
+                train_set_x = f['train_set_x']
+                test_set_x = f['test_set_x']
+                train_set_y = f['train_set_y']
+                train_set_y = np.zeros((train_set_y.shape[0], 120))
+                train_set_y[:i] = 1
+                test_set_y = f['test_set_y']
+                test_set_y = np.zeros((test_set_y.shape[0], 120))
+                test_set_y[:i] = 1
+
+                num_train = train_set_x.shape[0] - 1
+
+                with h5py.File('dog_data_h5/train_and_test.hdf5', 'a') as g:
+                    print(g.keys())
+                    total_train_set_x = g['total_train_set_x']
+                    total_train_set_y = g['total_train_set_y']
+                    total_test_set_x = g['total_test_set_x']
+                    total_test_set_y = g['total_test_set_y']
+
+                    del g['total_train_set_x']
+                    del g['total_train_set_y']
+                    del g['total_test_set_x']
+                    del g['total_test_set_y']
+
+                    # # total_train_set_x.resize(total_train_set_x.shape[0] + train_set_x.shape[0],axis = 0)
+                    # total_train_set_x[j,:] = train_set_x[1]
+
+                    print("prev: ",total_train_set_x.shape, total_train_set_y.shape, total_test_set_x.shape, total_test_set_y.shape)
+                    
+                    print("train_set_x shape: ", train_set_x.shape)                    
+
+                    g['total_train_set_x'] = np.vstack((total_train_set_x, f['train_set_x']))
+                    g['total_train_set_y'] = np.vstack((total_train_set_y, train_set_y))
+                    g['total_test_set_x'] = np.vstack((total_test_set_x, f['test_set_x']))
+                    g['total_test_set_y'] = np.vstack((total_test_set_y, test_set_y)) 
+
+                    print(total_train_set_x.shape, total_train_set_y.shape, total_test_set_x.shape, total_test_set_y.shape)
+            i += 1
+        j += num_train
+    with h5py.File('train_and_test.hdf5', 'a') as g:
+        total_train_set_x = g['total_train_set_x']
+        total_train_set_y = g['total_train_set_y']
+        total_test_set_x = g['total_test_set_x']
+        total_test_set_y = g['total_test_set_y']
+        total_train_set_x = total_train_set_x.T
+        total_train_set_y = total_train_set_y.T
+        total_test_set_x = total_test_set_x.T
+        total_test_set_y = total_test_set_y.T
+
+
+
+def load_dog_data_for_train():
+    import glob
+
+    # with h5py.File('train_and_test.hdf5', 'r') as f:
+    #     train_set_x = f['total_train_set_x']
+    #     train_set_y = f['total_train_set_y']
+    #     test_set_x = f['total_test_set_x']
+    #     test_set_y = f['total_test_set_y']
+
+
+    classes = []
+    for filename in glob.glob('/Users/xhe/Desktop/image_classifier/dog_data_h5/*'):
+        classes.append(filename)
+
+    print(len(classes))
 
 def load_data():
-    
+
     train_dataset = h5py.File('train_catvnoncat.h5', "r")
     train_set_x_orig = np.array(train_dataset["train_set_x"][:]) # your train set features
     train_set_y_orig = np.array(train_dataset["train_set_y"][:]) # your train set labels

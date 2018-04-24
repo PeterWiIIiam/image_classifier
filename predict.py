@@ -43,7 +43,7 @@ def image_preprocess():
 my_image_input = image_preprocess()
 p, probas = predict(my_image_input, 0, parameters)
 print(probas)
-plt.show()
+# plt.show()
 
 train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes = load_data()
 train_x_flatten = train_set_x_orig.reshape(train_set_x_orig.shape[0], -1).T   
@@ -53,3 +53,8 @@ test_x = test_x_flatten/255.
 
 
 p, probas = predict(test_x, test_set_y_orig, parameters)
+
+# load_dog_data()
+# load_dog_data_into_variables()
+test_train_set()
+# load_dog_data_for_train()
