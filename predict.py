@@ -8,7 +8,7 @@ import scipy
 from scipy import ndimage
 from dnn_app_utils_v2 import *
 
-
+save_dog_data()
 model = open("model", 'r')
 parameters = pickle.load(model)
 
@@ -54,7 +54,3 @@ test_x = test_x_flatten/255.
 
 p, probas = predict(test_x, test_set_y_orig, parameters)
 
-# load_dog_data()
-# load_dog_data_into_variables()
-test_train_set()
-# load_dog_data_for_train()

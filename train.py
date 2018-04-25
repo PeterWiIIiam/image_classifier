@@ -8,7 +8,7 @@ from scipy import ndimage
 from dnn_app_utils_v2 import *
 import pickle
 
-train_x_orig, train_y, test_x_orig, test_y, classes = load_data()
+train_x_orig, train_y, test_x_orig, test_y, classes = load_dog_data()
 
 # index = 10
 # plt.imshow(train_x_orig[index])
@@ -32,13 +32,16 @@ print ("test_y shape: " + str(test_y.shape))
 # train_x = train_x_flatten/255.
 # test_x = test_x_flatten/255.
 
+train_x = train_x_orig
+test_x = test_x_orig
+
 print ("train_x's shape: " + str(train_x.shape))
 print ("test_x's shape: " + str(test_x.shape))
 
 n_x = train_x.shape[0]     
 n_h = 7
 n_y = len(classes)
-layers_dims = (n_x, n_h, n_y)
+layers_dims = (n_x, n_h, 1)
 
 
 
@@ -110,7 +113,7 @@ def two_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 
 
 # parameters = two_layer_model(train_x, train_y, layers_dims = (n_x, n_h, n_y), num_iterations = 2500, print_cost=True)
 
-layers_dims = [n_x, 7,7,7,7,7,7,7,7, 5, n_y] 
+layers_dims = [n_x, 10,10,10,10,50,100, n_y ] 
 
 
 def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 3000, print_cost=False):
@@ -129,7 +132,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
     parameters -- parameters learnt by the model. They can then be used to predict.
     """
 
-    np.random.seed(1)
+
     costs = []                         
     
     parameters = initialize_parameters_deep(layers_dims)
@@ -164,6 +167,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
 
     return parameters
 
-parameters = L_layer_model(train_x, train_y, layers_dims, learning_rate = 0.0075, num_iterations = 2500, print_cost = True)
-model = open("model", 'w')
+parameters =  L_layer_model(train_x, train_y, layers_dims)
+model = open("dog_model", 'w')
 pickle.dump(parameters, model)
+
