@@ -53,5 +53,5 @@ test_set_y = f['test_dataset_y'][:]
 # train_x = train_x_flatten/255.
 # test_x = test_x_flatten/255.
 
-p, probas = predict(test_x, test_dataset_y, parameters)
+p, probas = predict(test_set_x.T, test_set_y.T, parameters)
 

@@ -91,14 +91,14 @@ def load_dog_data():
     f = h5py.File('dog_datasets.hdf5', 'r')
     train_set_x = f['train_dataset_x'][:]
     train_set_y = f['train_dataset_y'][:]
-    test_set_x = f['test_dataset_x'][:]
-    test_set_y = f['test_dataset_y'][:]
+    # test_set_x = f['test_dataset_x'][:]
+    # test_set_y = f['test_dataset_y'][:]
 
     classes = []
     for filename in glob.glob('/Users/xhe/Desktop/image_classifier/images/*'):
         classes.append(filename[53:len(filename)])
 
-    return train_set_x.T, train_set_y.T, test_set_x.T, test_set_y.T, classes
+    return train_set_x.T, train_set_y.T, classes
 
 def save_dog_data():
 
@@ -119,6 +119,7 @@ def save_dog_data():
     test_dataset_y = dataset_file.create_dataset('test_dataset_y', (1, 120), chunks = True, maxshape = (None, None))
     test_dataset_x = dataset_file.create_dataset('test_dataset_x', (1, num_px * num_px * 3) , chunks = True, maxshape = (None, None))
     train_dataset_y = dataset_file.create_dataset('train_dataset_y', (1, 120), chunks = True, maxshape = (None, None))
+    j = 0
 
     for filename in glob.glob('/Users/xhe/Desktop/image_classifier/images/*'):
         dog_name = filename[53:len(filename)]
@@ -131,40 +132,48 @@ def save_dog_data():
 
 
         classes.append(dog_name)
-        j = 0
+
         i = 0
 
 
+
         for image_name in glob.glob('%s/*'%filename):
+            print(dataset_file['train_dataset_x'].shape, dataset_file['train_dataset_y'].shape, dataset_file['test_dataset_x'].shape, dataset_file['test_dataset_y'].shape)
+            print(dog_name + " : ", i)
             image_orig = np.array(ndimage.imread(image_name, flatten=False))
             my_image = scipy.misc.imresize(image_orig, size=(num_px,num_px)).reshape((num_px*num_px*3,1))
             my_image = my_image/255.
             my_image = my_image.T
+            append_pos = -1
+
+            if j == 0 and i == 0:
+                append_pos = 0
 
             if np.random.choice(set_choices, p = set_weight) == 'train':
                 print('train')
                 train_set_x = my_image
                 train_set_y = np.zeros([1, 120])
-                train_set_y[:j] = 1
-                dataset_file['train_dataset_x'].resize(dataset_file['train_dataset_x'].shape[0] + 1, axis = 0)
-                dataset_file['train_dataset_x'][-1:] = train_set_x
-                dataset_file['train_dataset_y'].resize(dataset_file['train_dataset_y'].shape[0] + 1, axis = 0)
-                dataset_file['train_dataset_y'][-1:] = train_set_y
+                train_set_y[:,j] = 1
+
+                dataset_file['train_dataset_x'].resize(dataset_file['train_dataset_x'].shape[0] - append_pos, axis = 0)
+                dataset_file['train_dataset_x'][append_pos:] = train_set_x
+                dataset_file['train_dataset_y'].resize(dataset_file['train_dataset_y'].shape[0] - append_pos, axis = 0)
+                dataset_file['train_dataset_y'][append_pos:] = train_set_y
             else:
                 print('test')
                 test_set_x = my_image
                 test_set_y = np.zeros([1, 120])
-                test_set_y[:j] = 1
-                dataset_file['test_dataset_x'].resize(dataset_file['test_dataset_x'].shape[0] + 1, axis = 0)
-                dataset_file['test_dataset_x'][-1:] = test_set_x
-                dataset_file['test_dataset_y'].resize(dataset_file['test_dataset_y'].shape[0] + 1, axis = 0)
-                dataset_file['test_dataset_y'][-1:] = test_set_y
+                test_set_y[:,j] = 1
+                dataset_file['test_dataset_x'].resize(dataset_file['test_dataset_x'].shape[0] - append_pos, axis = 0)
+                dataset_file['test_dataset_x'][append_pos:] = test_set_x
+                dataset_file['test_dataset_y'].resize(dataset_file['test_dataset_y'].shape[0] - append_pos, axis = 0)
+                dataset_file['test_dataset_y'][append_pos:] = test_set_y
             
             i += 1
-            print(dataset_file['train_dataset_x'].shape, dataset_file['train_dataset_y'].shape, dataset_file['test_dataset_x'].shape, dataset_file['test_dataset_y'].shape)
-            print(dog_name + " : ", i)
+
 
         j += 1
+
 
 def load_data():
 
@@ -256,6 +265,9 @@ def linear_forward(A, W, b):
     cache -- a python dictionary containing "A", "W" and "b" ; stored for computing the backward pass efficiently
     """
     
+    print("W shape: ", W.shape)
+    print("A shape: ", A.shape)
+    print("b shape: ", b.shape)
     Z = W.dot(A) + b
     
     assert(Z.shape == (W.shape[0], A.shape[1]))
@@ -493,10 +505,13 @@ def predict(X, y, parameters):
     
     m = X.shape[1]
     n = len(parameters) // 2 # number of layers in the neural network
+    print("number of layers: %i"%n)
     p = np.zeros((1,m))
     
     # Forward propagation
     probas, caches = L_model_forward(X, parameters)
+    print("probas shape: ", probas.shape)
+    print("y shape: ", y.shape)
 
     
     # convert probas to 0/1 predictions
@@ -510,8 +525,18 @@ def predict(X, y, parameters):
     #print ("predictions: " + str(p))
     #print ("true labels: " + str(y))
 
-    correct_predictions = np.sum(p == y)
-    print("Accuracy: %i out of %i" %(correct_predictions, m))
+    correct_predictions = np.all(probas == y, axis=0)
+    print("correct_predictions: ",np.sum(correct_predictions))
+    print(probas.T[1])
+    print(y.T[1])
+
+    y = y.T
+    probas = probas.T
+    for i in range(probas.shape[0]):
+        for j in range(probas.shape[1]):
+            if probas[i][j] == y[i][j]:
+                correct_predictions += 1
+    # print("Accuracy: %i out of %i" %(correct_predictions, m))
         
     return p, probas
 
