@@ -8,11 +8,11 @@ import scipy
 from scipy import ndimage
 from dnn_app_utils_v2 import *
 
-save_dog_data()
-model = open("model", 'r')
-parameters = pickle.load(model)
 
-num_px = 64
+dog_model = open("dog_model", 'r')
+parameters = pickle.load(dog_model)
+
+num_px = 150
 print(num_px)
 
 def image_preprocess():
@@ -40,17 +40,18 @@ def image_preprocess():
 
     return my_image
 
-my_image_input = image_preprocess()
-p, probas = predict(my_image_input, 0, parameters)
-print(probas)
+# my_image_input = image_preprocess()
+# p, probas = predict(my_image_input, 0, parameters)
+# print(probas)
 # plt.show()
 
-train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes = load_data()
-train_x_flatten = train_set_x_orig.reshape(train_set_x_orig.shape[0], -1).T   
-test_x_flatten = test_set_x_orig.reshape(test_set_x_orig.shape[0], -1).T
-train_x = train_x_flatten/255.
-test_x = test_x_flatten/255.
+f = h5py.File('dog_datasets.hdf5', 'r')
+test_set_x = f['test_dataset_x'][:]
+test_set_y = f['test_dataset_y'][:]
+# train_x_flatten = train_set_x_orig.reshape(train_set_x_orig.shape[0], -1).T   
+# test_x_flatten = test_set_x_orig.reshape(test_set_x_orig.shape[0], -1).T
+# train_x = train_x_flatten/255.
+# test_x = test_x_flatten/255.
 
-
-p, probas = predict(test_x, test_set_y_orig, parameters)
+p, probas = predict(test_x, test_dataset_y, parameters)
 

@@ -199,8 +199,6 @@ def initialize_parameters(n_x, n_h, n_y):
                     b2 -- bias vector of shape (n_y, 1)
     """
     
-    np.random.seed(1)
-    
     W1 = np.random.randn(n_h, n_x)*0.01
     b1 = np.zeros((n_h, 1))
     W2 = np.random.randn(n_y, n_h)*0.01
@@ -321,7 +319,7 @@ def L_model_forward(X, parameters):
         time_1 = time.time()
         A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], activation = "relu")
         time_onelayer = time.time() - time_1
-        print("time for layer %f" %l,time_onelayer)
+        print("time for layer %i" %l,time_onelayer)
         with open("time_stats", 'a+') as f:
             f.write("time for layer %i: %f \n" %(l,time_onelayer))
         caches.append(cache)
@@ -354,7 +352,7 @@ def compute_cost(AL, Y):
     cost = (1./m) * (-np.dot(Y,np.log(AL).T) - np.dot(1-Y, np.log(1-AL).T))
     cost = cost[0]
     time_cost = time.time() - time_1
-    print("time: to compute cost: %f" %time_cost)
+    print("time to compute cost: %f" %time_cost)
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
     # assert(cost.shape == ())
     with open("time_stats", 'a+') as f:

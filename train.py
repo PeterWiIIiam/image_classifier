@@ -158,10 +158,9 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
         
         parameters = update_parameters(parameters, grads, learning_rate)
 
-        time_iter = time.time() - time_1
-        print(time_iter)
-        with open("time_stats", "a+") as f:
-            f.write("time for iteration %i: %i \n" %(i, time_iter))
+
+        with open("dog_model", 'w') as dog_model:
+            pickle.dump(parameters, dog_model)
         
         if print_cost and i % 100 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
@@ -169,9 +168,13 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
             costs.append(cost)
         
         print("cost for iteration %i" %i,cost)
-        # with open("cost_stats", "a+") as f:
-        #     f.write("%f\n" %cost)
-        np.savetxt("cost_stats", cost)
+        time_iter = time.time() - time_1
+        print("time for iteration %i: %i \n" %(i, time_iter))
+        with open("time_stats", "a+") as f:
+            f.write("time for iteration %i: %i \n" %(i, time_iter))
+
+
+
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
     plt.xlabel('iterations (per tens)')
@@ -180,7 +183,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
 
     return parameters
 
-parameters =  L_layer_model(train_x, train_y, layers_dims)
-model = open("dog_model", 'w')
-pickle.dump(parameters, model)
+
+parameters =  L_layer_model(train_x, train_y, layers_dims, num_iterations = 350)
+
 
