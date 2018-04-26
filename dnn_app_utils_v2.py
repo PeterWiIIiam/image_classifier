@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
+import time
 
 
 
@@ -317,7 +318,12 @@ def L_model_forward(X, parameters):
     # Implement [LINEAR -> RELU]*(L-1). Add "cache" to the "caches" list.
     for l in range(1, L):
         A_prev = A 
+        time_1 = time.time()
         A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], activation = "relu")
+        time_onelayer = time.time() - time_1
+        print("time for layer %f" %l,time_onelayer)
+        with open("time_stats", 'a+') as f:
+            f.write("time for layer %i: %f \n" %(l,time_onelayer))
         caches.append(cache)
     
     # Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
@@ -344,11 +350,15 @@ def compute_cost(AL, Y):
     m = Y.shape[1]
 
     # Compute loss from aL and y.
+    time_1 = time.time()
     cost = (1./m) * (-np.dot(Y,np.log(AL).T) - np.dot(1-Y, np.log(1-AL).T))
     cost = cost[0]
-    print(cost.shape)
+    time_cost = time.time() - time_1
+    print("time: to compute cost: %f" %time_cost)
     cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
     # assert(cost.shape == ())
+    with open("time_stats", 'a+') as f:
+        f.write("time to compute cost: %f \n" %time_cost)
     
     return cost
 
@@ -435,11 +445,16 @@ def L_model_backward(AL, Y, caches):
     
     for l in reversed(range(L-1)):
         # lth layer: (RELU -> LINEAR) gradients.
+        time_1 = time.time()
         current_cache = caches[l]
         dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA" + str(l + 2)], current_cache, activation = "relu")
         grads["dA" + str(l + 1)] = dA_prev_temp
         grads["dW" + str(l + 1)] = dW_temp
         grads["db" + str(l + 1)] = db_temp
+        time_onelayer = time.time() - time_1
+        print("time for layer %i backward: %f" %(l, time_onelayer))
+        with open("time_stats", 'a+') as f:
+            f.write("time for layer %i backward: %f \n" %(l, time_onelayer))
 
     return grads
 

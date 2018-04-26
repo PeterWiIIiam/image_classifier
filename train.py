@@ -8,7 +8,13 @@ from scipy import ndimage
 from dnn_app_utils_v2 import *
 import pickle
 
+time_1 = time.time()
 train_x_orig, train_y, test_x_orig, test_y, classes = load_dog_data()
+time_2 = time.time()
+time_load_data = time_2 - time_1
+print(time_load_data)
+with open("time_stats", "w") as f:
+    f.write("time to load data: %f\n" %time_load_data)
 
 # index = 10
 # plt.imshow(train_x_orig[index])
@@ -113,7 +119,7 @@ def two_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 
 
 # parameters = two_layer_model(train_x, train_y, layers_dims = (n_x, n_h, n_y), num_iterations = 2500, print_cost=True)
 
-layers_dims = [n_x, 10,10,10,10,50,100, n_y ] 
+layers_dims = [n_x, 10,10,10,10,50, 100, n_y ]
 
 
 def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 3000, print_cost=False):
@@ -139,7 +145,9 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
     
     
     for i in range(0, num_iterations):
+        time_1 = time.time()
         
+
         AL, caches = L_model_forward(X, parameters)
         # print(AL)
         
@@ -148,17 +156,22 @@ def L_layer_model(X, Y, layers_dims, learning_rate = 0.0075, num_iterations = 30
         grads = L_model_backward(AL, Y, caches)
         # print(grads['dW1'])
         
-        
         parameters = update_parameters(parameters, grads, learning_rate)
-        
-                
+
+        time_iter = time.time() - time_1
+        print(time_iter)
+        with open("time_stats", "a+") as f:
+            f.write("time for iteration %i: %i \n" %(i, time_iter))
         
         if print_cost and i % 100 == 0:
             print ("Cost after iteration %i: %f" %(i, cost))
         if print_cost and i % 100 == 0:
             costs.append(cost)
-            
-    
+        
+        print("cost for iteration %i" %i,cost)
+        # with open("cost_stats", "a+") as f:
+        #     f.write("%f\n" %cost)
+        np.savetxt("cost_stats", cost)
     plt.plot(np.squeeze(costs))
     plt.ylabel('cost')
     plt.xlabel('iterations (per tens)')
